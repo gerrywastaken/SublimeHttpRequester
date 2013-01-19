@@ -227,25 +227,28 @@ class HttpRequesterCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         global gPrevHttpRequest
         selection = ""
-        for region in self.view.sel():
-            # Concatenate selected regions together.
-            selection += self.view.substr(region)
+
+        if self.has_selection():
+            for region in self.view.sel():
+                # Concatenate selected regions together.
+                selection += self.view.substr(region)
+        else:
+            # Use entire document as selection
+            entireDocument = sublime.Region(0, self.view.size())
+            selection = self.view.substr(entireDocument)
 
         gPrevHttpRequest = selection
         resultsPresenter = ResultsPresenter(self)
         httpRequester = HttpRequester(resultsPresenter)
         httpRequester.request(selection)
 
-    def is_visible(self):
+    def has_selection(self):
 
-        is_visible = False
+        has_selection = False
 
-        # Only enable menu option if at least one region contains selected text.
+        # Check if at least one region contains selected text.
         for region in self.view.sel():
             if not region.empty():
-                is_visible = True
+                has_selection = True
 
-        return is_visible
-
-    def is_enabled(self):
-        return self.is_visible()
+        return has_selection
